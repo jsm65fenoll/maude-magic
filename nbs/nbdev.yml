@@ -1,0 +1,9 @@
+project:
+  output-dir: _docs
+
+website:
+  title: "maude-magic"
+  site-url: "https://jsm65fenoll.github.io/maude-magic"
+  description: "Jupyter Lab magic for maude sessions in IPython"
+  repo-branch: main
+  repo-url: "https://github.com/jsm65fenoll/maude-magic"
