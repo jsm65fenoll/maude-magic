@@ -5,4 +5,5 @@ d = { 'settings': { 'branch': 'main',
                 'doc_host': 'https://jsm65fenoll.github.io',
                 'git_url': 'https://github.com/jsm65fenoll/maude-magic',
                 'lib_path': 'maude_magic'},
-  'syms': {'maude_magic.core': {'maude_magic.core.foo': ('core.html#foo', 'maude_magic/core.py')}}}
+  'syms': { 'maude_magic.core': {'maude_magic.core.foo': ('core.html#foo', 'maude_magic/core.py')},
+            'maude_magic.maude-magic': {'maude_magic.maude-magic.say_hello': ('maude-magic.html#say_hello', 'maude_magic/maude-magic.py')}}}
