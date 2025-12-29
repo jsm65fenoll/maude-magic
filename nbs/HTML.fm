@@ -1,0 +1,48 @@
+fmod HTML is 
+    sorts Name QName Element Attribute HTML .
+
+    subsorts QName < Name .
+
+---(    Types of elements
+    Type    Content  Elements Text Attributes      
+    Simple                      X
+    Complex  Empty                    X
+    Complex  Elements    X            X
+    Complex  Text               X     X
+    Complex  Mixed       X      X     X
+   )---    
+
+    sorts Simple Complex Empty Elements Text Mixed .
+
+    subsorts Simple < Text < Mixed < HTML .
+    subsorts Empty  < Elements Text < Mixed < HTML .
+    subsorts  Simple Complex Empty Text Mixed < HTML . 
+
+    --- Sequences of elements
+
+    op <_>_<_/> : Name Text+ Name  -> [Simple] [ctor] .
+    mb <Tg>Tx</Tg> : Simple .   
+
+    op  <_ _/>  : Name Attr*       -> Complex-Empty [ctor] .
+    op  <_/>    : Name             -> Complex-Empty [ctor] . 
+
+    op <_ _>_<_>  : Name Attrs+ Element+ Name -> [Complex-Elements] [ctor] .  
+    op <_>_<_>    : Name Element+ Name        -> [Complex-Elements] [ctor] .      
+    mb <Tg A+>E+<Tg> : Complex-Elements .
+    mb <Tg>E+<Tg>    : Complex-Elements .    
+    eq <Tg A+><Tg> = <Tg A+ /> . 
+    eq <Tg><Tg> = </Tg> . 
+
+    op <_ _>_<_>  : Name Attrs+ Text+ Name -> [Complex-Text] [ctor] .  
+    op <_>_<_>    : Name Element+ Name     -> [Complex-Text] [ctor] .      
+    mb <Tg A+>T+<Tg> : Complex-Text .
+    mb <Tg>T+<Tg>    : Complex-Text .    
+    eq <Tg A+><Tg> = <Tg A+/> . 
+    eq <Tg><Tg> = </Tg> . 
+
+    op <_ _>_<_>  : Name Attr+ Mixed+ Name -> [Mixed] [ctor] .  
+    op <_>_<_>    : Name Mixed+ Name       -> [Mixed] [ctor] .          
+    mb <Tg A+>Mx+</Tg> : Mixed .
+    mb <Tg>Mx+</Tg>    : Mixed .        
+
+endfm
