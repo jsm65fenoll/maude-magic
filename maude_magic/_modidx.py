@@ -6,4 +6,9 @@ d = { 'settings': { 'branch': 'main',
                 'git_url': 'https://github.com/jsm65fenoll/maude-magic',
                 'lib_path': 'maude_magic'},
   'syms': { 'maude_magic.core': {'maude_magic.core.foo': ('core.html#foo', 'maude_magic/core.py')},
-            'maude_magic.maude-magic': {'maude_magic.maude-magic.say_hello': ('maude-magic.html#say_hello', 'maude_magic/maude-magic.py')}}}
+            'maude_magic.maude-magic': { 'maude_magic.maude-magic.MaudeInterpreter': ( 'maude-magic.html#maudeinterpreter',
+                                                                                       'maude_magic/maude-magic.py'),
+                                         'maude_magic.maude-magic.MaudeInterpreter.__init__': ( 'maude-magic.html#maudeinterpreter.__init__',
+                                                                                                'maude_magic/maude-magic.py'),
+                                         'maude_magic.maude-magic.say_hello': ( 'maude-magic.html#say_hello',
+                                                                                'maude_magic/maude-magic.py')}}}
