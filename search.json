@@ -1,0 +1,92 @@
+[
+  {
+    "objectID": "maude-magic.html",
+    "href": "maude-magic.html",
+    "title": "maude-magic",
+    "section": "",
+    "text": "Refs: - pexpect - nbdev - IPython magics - See persistent Shells.ipynb\nfor package in pexpect nbdev jupyterlab-quarto\ndo  \n    pip list | grep   \"^$package *\" &gt; /dev/null && echo \"$package found\" || pip install $package\ndone\n# This must be done in terminal\n# nbdev_install_quarto",
+    "crumbs": [
+      "maude-magic"
+    ]
+  },
+  {
+    "objectID": "maude-magic.html#the-maude-interpreter-class",
+    "href": "maude-magic.html#the-maude-interpreter-class",
+    "title": "maude-magic",
+    "section": "The Maude Interpreter class",
+    "text": "The Maude Interpreter class\n\nimport os\nimport pexpect\nimport time\n\n\nsource\n\nMaudeInterpreter\n\n MaudeInterpreter (debug=False, timeout=3)\n\nControls maude execution, executing commands and print responses. Preserve sessions between different cell executions.\n\n\n\nTimeoutException\n\n TimeoutException ()\n\nException raised if time-out.\nCreating maude interpreter:\n\nmaude=MaudeInterpreter(debug=True)\n\nLoad a maude module. Show it and make some reduction:\n\nprint(maude('load SIMPLE-NAT .'))\nprint(maude('show module .'))\nprint(maude('red s s zero .'))\n\nSkip quit command:\n\nmaude('quit .')\n\nClosing maude session on object destroy:\n\ndel maude",
+    "crumbs": [
+      "maude-magic"
+    ]
+  },
+  {
+    "objectID": "maude-magic.html#the-maude-magic-class",
+    "href": "maude-magic.html#the-maude-magic-class",
+    "title": "maude-magic",
+    "section": "The maude Magic Class",
+    "text": "The maude Magic Class\n\nfrom IPython.core.magic import (Magics, magics_class, line_magic,\n                                cell_magic, line_cell_magic)\n\n\n# This code can be put in any Python module, it does not require IPython\n# itself to be running already.  It only creates the magics subclass but\n# doesn't instantiate it yet.\n# from __future__ import print_function\nfrom IPython.core.magic import (Magics, magics_class, line_magic,\n                                cell_magic, line_cell_magic)\n\n# The class MUST call this class decorator at creation time\n@magics_class\nclass MaudeMagics(Magics):\n    \"\"\"Adapts Maude Shell to a IPython Magic class.Uses a owned Maude Shell.\n       Cell magics are used to execute maude commands.\n       Line magics are used for command line options.\"\"\"  \n    def __init__(self,shell):\n        # Create the owned Maude Shell instance an pass it as shell\n        super(MaudeMagics,self).__init__(MaudeInterpreter(debug=False)) \n        # print(\"On Construntor:\"+str(type(self.shell)))\n        self.line_counter=0\n        \n    def prepare_request(self,cell_contents:str)-&gt;str:\n        \"\"\" - Removes leading and trailing empty lines from cell\n            - Removes leading and trailing empty lines from each line\n            - Terminates each line with \\r\\n\n            - Count efective lines sent to maude shell.\n        \"\"\"\n        # print(f\"cell_contents at maude()={cell_contents}\")\n        cell_contents=cell_contents.strip()\n        request = \"\"\n        for cell_line in cell_contents.split('\\n'):\n            request+=cell_line.strip()+'\\n'\n            self.line_counter+=1\n        # Maude shell will add trailing \\n\n        return request\n    \n    __prepare_request=prepare_request \n\n    def prepare_response(self,shell_response:str)-&gt;str:\n        \"\"\" Ads the count of sent lines at the header of respone,\n            to ease sintax error location.\n        \"\"\"    \n        response =  f\"{self.line_counter} (lines sent before.)\\n\"\n        response += (\"--------------------------------------------\\n\")\n        response += shell_response + '\\n'\n        return response\n    \n    __prepare_response = prepare_response     \n           \n    @line_cell_magic\n    def maude(self, line, cell=None):\n        if cell is None:\n            return self.shell(line)\n        else:\n            # print(f\"cell at maude()={cell}\")\n            print(self.prepare_response(self.shell(self.prepare_request(cell))))\n\n# In order to actually use these magics, you must register them with a\n# running IPython.\n\ndef load_ipython_extension(ipython):\n    \"\"\"\n    Any module file that define a function named `load_ipython_extension`\n    can be loaded via `%load_ext module.path` or be configured to be\n    autoloaded by IPython at startup time.\n    \"\"\"\n    # You can register the class itself without instantiating it.  IPython will\n    # call the default constructor on it.\n    ipython.register_magics(MaudeMagics)\n\nManually executing ‘load_ipython_extension’ for test purposes:\n\nload_ipython_extension(get_ipython())\n\nNow, MaudeMagic uses an owned MaudeInterpreter to run maude commands:\n\nresult = %maude load SIMPLE-NAT . \nresult\n    #assert result == 'Maude&gt;'\n\n\nshow module .\n\n\nred s s zero .",
+    "crumbs": [
+      "maude-magic"
+    ]
+  },
+  {
+    "objectID": "maude-magic.html#use-cases-as-test",
+    "href": "maude-magic.html#use-cases-as-test",
+    "title": "maude-magic",
+    "section": "Use cases as test",
+    "text": "Use cases as test\n\nJSON Syntax\nJSON-LD 1.1\n\nfmod JSON is\n    ------------------------\n    sort Json .\n    -----------------------    \n    --- Section 3.4 Defines JSON Objects \n    protecting STRING * (op + : String String -&gt; String to & ) .\n    protecting FLOAT . \n    --- For JSON syntax we use Number, String, Boolean, null, Array and JSON    \n    --- subsorts Rat Bool &lt; Json .    \n    subsort  String &lt; Json .\n        \n    sorts Json+ Json* .\n    subsorts Json &lt; Json+ &lt; Json* .    \n\n    op nil-Json* : -&gt; Json* [ctor] .        \n    op _,_ : Json* Json*   -&gt; Json* [ctor id: nil-Json*] .\n    op _,_ : Json* Json+   -&gt; Json+ [ditto] .        \n    op _,_ : Json+ Json*   -&gt; Json+ [ditto] .            \n    op _,_ : Json+ Json+   -&gt; Json+ [ditto] .                \n    \n\n        \n    sorts  Pair Pair+ Pair* .\n\n    op _:_ : String Json -&gt; Pair [ctor prec 30] .\n    \n    subsorts Pair &lt; Pair+ &lt; Pair* .\n           \n    op nil-Pair* : -&gt; Pair* [ctor] .\n   \n    op _,_ : Pair* Pair*   -&gt; Pair* [ctor assoc comm id: nil-Pair*] .\n    op _,_ : Pair* Pair+   -&gt; Pair+ [ditto] .\n    op {_} : Pair*         -&gt; Json  [ctor] . \n    op [_] : Json*         -&gt; Json  [ctor] . \n        \nendfm\n\n\nred \"Juan\" : \"Perico\" .\n\n\nred \n{\n  \"name\" : \"Manu Sporny\" ,\n  \"homepage\" : \"http://manu.sporny.org/\" ,\n  \"image\" : \"http://manu.sporny.org/images/manu.png\"\n} .\n\n\nparse \"Juan\" , \"Perico\" .\n\n\nparse \"Juan\",{ \"id\" : \"perico\" } .\n\n\nparse [ \"A\", \"B\"] .\n\n\nparse --- Example 2: Sample JSON document\n{\n  \"name\" : \"Manu Sporny\",\n  \"homepage\" : \"http://manu.sporny.org/\",\n  \"image\" : \"http://manu.sporny.org/images/manu.png\"\n} .\n\n\n--- Example 4\nred \n{\n  \"@context\" : {\n    \"name\" : \"http://schema.org/name\",\n    \"image\" : {\n      \"@id\" : \"http://schema.org/image\",\n      \"@type\" : \"@id\"\n    },\n    \"homepage\" : {\n      \"@id\" : \"http://schema.org/url\",\n\n        \"@type\" : \"@id\"\n    }\n  }\n} .\n\n\nIRIS\nJSON-LD 1.1\n\nfmod IRIS is\nprotecting JSON .\n\nsort IRI .\nsubsort IRI &lt; String .\ncmb S:String : IRI if find(S:String,\":\",0) :: NzNat .\nendfm\n\n205 (lines sent before.)\n--------------------------------------------\n\n\n\n\n\nresult = %maude red \"Http://perico\" .\nassert 'IRI: \"Http://perico\"'\n\n\n\nKeywords\n\nfmod KEYWORD is\n    protecting STRING .\n    sort Keyword .\n    subsort Keyword &lt; String .\n    mb \"@context\"  : Keyword .\n    mb \"@id\"       : Keyword .\n    mb \"@context\"  : Keyword .\n    mb \"@id\"       : Keyword .\n    mb \"@included\" : Keyword .\n    mb \"@graph\"    : Keyword .\n    mb \"@nest\"     : Keyword .\n    mb \"@type\"     : Keyword .\n    mb \"@reverse\"  : Keyword .\n    mb \"@index\"    : Keyword .\nendfm\n\n271 (lines sent before.)\n--------------------------------------------\nfmod KEYWORD is\n&gt; protecting STRING .\n&gt; sort Keyword .\n&gt; subsort Keyword &lt; String .\n&gt; mb \"@context\"  : Keyword .\n&gt; mb \"@id\"       : Keyword .\n&gt; mb \"@context\"  : Keyword .\n&gt; mb \"@id\"       : Keyword .\n&gt; mb \"@included\" : Keyword .\n&gt; mb \"@graph\"    : Keyword .\n&gt; mb \"@nest\"     : Keyword .\n&gt; mb \"@type\"     : Keyword .\n&gt; mb \"@reverse\"  : Keyword .\n&gt; mb \"@index\"    : Keyword .\n&gt; endfm\nAdvisory: redefining module KEYWORD.\nMaude&gt; \n\n\n\n\nresult = %maude red \"@context\" . \nassert 'Keyword: \"@context\"' in result\n\n\n\nTerms\n\nfmod TERM is\n    sort Term .\n    subsort Term &lt; String .\n    cmb S:String : Term  if find(S:String,\":\",0) = notFound \n                         /\\ not substr(S:String,0,1) =\"@\" .\nendfm\n\n283 (lines sent before.)\n--------------------------------------------\nfmod TERM is\n&gt; sort Term .\n&gt; subsort Term &lt; String .\n&gt; cmb S:String : Term  if find(S:String,\":\",0) = notFound\n&gt; /\\ not substr(S:String,0,1) =\"@\" :\n&gt; endfm\n&gt; \n\n\n\n\n\n\nJSON-LD BASIC\n\nfmod JSON-LD-BASIC is\n    protecting JSON * (sort Pair to Entry, Pair+ to Entry+, Pair* to Entry*,\n                       sort Json to Value) .\n\n    sorts Term IRI Keyword .\n    subsorts Term IRI Keyword &lt; String .\n\n    vars S : String . \n        \n    cmb S : Keyword if substr(S,0,1) == \"@\" .\n    cmb S : IRI     if find(S,\":\",0) =/= notFound .\n    cmb S : Term    if find(S,\":\",0) == notFound /\\ substr(S,0,1) =/= \"@\" .    \n\n    --- The Context \n \n    sort Context_Map ,\n    subsort Context_Map &lt; Entry .    \n                \n    mb T:term : V:Value  : Context_Map .   \n        \n    sorts Context_Map+ Context_Map* .\n    subsorts Context_Map &lt; Context_Map+ &lt; Context_Map* .\n    subsort Context_Map  &lt; Entry .    \n    subsort Context_Map+ &lt; Entry+ .    \n    subsort Context_Map* &lt; Entry* . \n    \n    op _,_ : Context_Map* Context_Map* -&gt; Context_Map* [ditto] .\n    op _,_ : Context_Map* Context_Map+ -&gt; Context_Map+ [ditto] .                    \n\n    sort Context_Entry .\n    subsort Context_Entry  &lt; Entry .    \n    \n    vars P : Entry .\n    cmb P : Context_Entry if \"@context\" : { CE*:context_entry+ } := P .  \n\n    ---  Context semantics:    \n\n    vars T   : Term .\n    vars Iri : IRI .\n    vars V   : Value . \n    vars ... : context_entry* .\n        \n    eq { \"@context\" : { T : Iri }, T : V, ...} = { \"@context\" : { T : Iri }, Iri : V, ...} .\n\n    --- The Identity entry \n    \n    sort Identity .\n    subsort Identity &lt; Entry .\n    cmb P:Entry : Identity if \"@id\" : Iri:IRI := P .\n\n    --- The Type entry\n\n    sort Type-Entry .\n    subsort Type-Entry &lt; Entry .\n    cmb P:Entry : Type-Entry if \"@type\" : Iri:IRI := P .\n\nendfm\n\n\nshow modules .\n\n\nred \"@context\" .    \nred \"pepe\" .    \nred\n\n\n--- Example 4\nred \n \"@context\" : {\n    \"name\" : \"http://schema.org/name\",\n    \"image\" : {\n      \"@id\" : \"http://schema.org/image\",\n      \"@type\" : \"@id\"\n    }\n} .\n\n\nred {\n  \"@context\" : {\n    \"name\" : \"http://schema.org/name\"\n  },\n  \"name\" : \"Manu Sporny\",\n  \"status\" : \"trollin'\"\n} .\n\n\n\nHTML",
+    "crumbs": [
+      "maude-magic"
+    ]
+  },
+  {
+    "objectID": "maude-magic.html#to-do",
+    "href": "maude-magic.html#to-do",
+    "title": "maude-magic",
+    "section": "TO-DO",
+    "text": "TO-DO\n\nRemove trailibg newlines grom cell.\nA command that ads a path to MAUDE_LIB",
+    "crumbs": [
+      "maude-magic"
+    ]
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "maude-magic",
+    "section": "",
+    "text": "This file will become your README and also the index of your documentation.",
+    "crumbs": [
+      "maude-magic"
+    ]
+  },
+  {
+    "objectID": "index.html#developer-guide",
+    "href": "index.html#developer-guide",
+    "title": "maude-magic",
+    "section": "Developer Guide",
+    "text": "Developer Guide\nIf you are new to using nbdev here are some useful pointers to get you started.\n\nInstall maude_magic in Development mode\n# make sure maude_magic package is installed in development mode\n$ pip install -e .\n\n# make changes under nbs/ directory\n# ...\n\n# compile to have changes apply to maude_magic\n$ nbdev_prepare",
+    "crumbs": [
+      "maude-magic"
+    ]
+  },
+  {
+    "objectID": "index.html#usage",
+    "href": "index.html#usage",
+    "title": "maude-magic",
+    "section": "Usage",
+    "text": "Usage\n\nInstallation\nInstall latest from the GitHub repository:\n$ pip install git+https://github.com/jsm65fenoll/maude-magic.git\nor from conda\n$ conda install -c jsm65fenoll maude_magic\nor from pypi\n$ pip install maude_magic\n\n\nDocumentation\nDocumentation can be found hosted on this GitHub repository’s pages. Additionally you can find package manager specific guidelines on conda and pypi respectively.",
+    "crumbs": [
+      "maude-magic"
+    ]
+  },
+  {
+    "objectID": "index.html#how-to-use",
+    "href": "index.html#how-to-use",
+    "title": "maude-magic",
+    "section": "How to use",
+    "text": "How to use\nFill me in please! Don’t forget code examples:\n\n1+1\n\n2",
+    "crumbs": [
+      "maude-magic"
+    ]
+  }
+]
