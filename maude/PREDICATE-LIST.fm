@@ -1,0 +1,15 @@
+view Triple from TRIV to SIMPLE-TRIPLE is 
+    sort Elt to Term .
+endv 
+
+fmod PREDICATE-LIST is
+    protecting LIST{Triple} .
+
+    sort SP .
+    op _ _ : Term Term  -> SP [ctor] .
+    op _;_ : Term NeList{FullPredicate} -> NeList{Triple} [prec 50] .
+
+    eq S:Term ; P:Term O:Term  = S:Term P:Term  O:Term . .
+    eq S:Term ; P:Term O:Term Rest:NeList{FullPredicate}  
+       = S:Term P:Term O:Term . S:Term ;  Rest:NeList{FullPredicate} . .    
+endfm        

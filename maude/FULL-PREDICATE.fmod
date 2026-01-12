@@ -1,0 +1,9 @@
+fmod FULL-PREDICATE is
+    protecting SIMPLE-TRIPLE .
+
+    sort FullPredicate .
+    op _ _ . : Term Term -> FullPredicate [ctor prec 55] .
+endfm
+
+
+

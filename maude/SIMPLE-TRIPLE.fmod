@@ -1,0 +1,9 @@
+fmod SIMPLE-TRIPLE is
+    protecting STRING .
+    sort URI .
+    subsort String < URI .    
+    sort Term .
+    op <_> : URI -> Term [ctor] .
+    sort Triple .
+    op  _ _ _ . : Term Term Term -> Triple [prec 50] .
+endfm               
