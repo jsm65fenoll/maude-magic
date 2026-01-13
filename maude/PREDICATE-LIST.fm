@@ -4,6 +4,7 @@ endv
 
 fmod PREDICATE-LIST is
     protecting LIST{Triple} .
+    protecting LIST{FullPredicate} .    
 
     sort SP .
     op _ _ : Term Term  -> SP [ctor] .
