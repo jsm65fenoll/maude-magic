@@ -1,0 +1,4 @@
+- MaudeMagic.__init__: Uses provided naude shell or instantiates one if not  
+- Turtle: Completando sefinición de sujetos.
+- Turtle: Creando módulo de objetos.
+- MaudeInterpreter: implementando funcuón reduce
