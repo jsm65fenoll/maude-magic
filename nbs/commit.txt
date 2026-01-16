@@ -1,1 +1,2 @@
-- MaudeInterpreter: getTupleResult() implemented.
+- MaudeInterpreter: red(..) implemented and tested .
+- TODO: Modules Subject, Iri
