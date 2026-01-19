@@ -1,2 +1,3 @@
-- MaudeInterpreter: red(..) implemented and tested .
-- TODO: Modules Subject, Iri
+- MaudeInterpreter: Protocol Control .
+- Updated _sync method .
+- Cass ddivided into MaudeShell, MaudeSystem and Maude Magics
