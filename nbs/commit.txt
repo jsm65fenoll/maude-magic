@@ -1,3 +1,4 @@
-- MaudeInterpreter: Protocol Control .
-- Updated _sync method .
-- Cass ddivided into MaudeShell, MaudeSystem and Maude Magics
+- Redefining _sync method : to detect incomplete inputs, _sync must wait class.timeout to "\rMaude> " appear.
+  Bot code don't obey timeout specified at class instantiation.
+  This code can be used.
+- Added Catalog class diagram.
