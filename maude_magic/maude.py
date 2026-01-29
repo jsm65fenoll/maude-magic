@@ -121,10 +121,13 @@ class MaudeSystem(MaudeShell):
         """ Executes 'command' over 'term' expecting a result of text type."""    
         return self(command +" " + term.strip() + " .",echo=True)
 
-    def _getTupleResult(self,command,term,pattern,sort=None,value=None)->dict:
+    def _getTupleResult(self,command,term,pattern,sort=None,value=None,echo=False)->dict:
         """ Executes 'command' over 'term' and uses 'pattern' to fetch result components into a dict witth keys 
             type and value."""
+        # echo in this command must be true to have a response to analyze
         response = self(command +" " + term.strip()+ " .",echo=True)
+        # This echo is a parameter
+        if echo: print(response)
         result = pattern.search(response) if isinstance(pattern,re.Pattern) else  re.search(pattern,response)
         if sort  : assert result['sort']  == sort ,f"Type error: expecting {sort}, but found {result[0]}."
         if value : assert result['value'] == value,f"Value error: expecting {value},but found {result[1]}."    
@@ -142,9 +145,9 @@ class MaudeSystem(MaudeShell):
         """ Shows module "module" as cell result. By default, shows current module.""" 
         return self._getTextResult('show module',module)
  
-    def red(self,term,sort=None,value=None)->dict:
+    def red(self,term,sort=None,value=None,echo=False)->dict:
         """ Reduces "term" in current module and returs a "type,value" dictionary.""" 
-        return self._getTupleResult('red',term,self.red_reo,sort,value)
+        return self._getTupleResult('red',term,self.red_reo,sort,value,echo=echo)
 
     def parse(self,term,sort=None,value=None)->dict:
         """ Parses "term" in current module and returns a tupe,"value dictionary"."""
@@ -240,7 +243,7 @@ class MaudeMagics(Magics):
             # ToDo: migrar el cálculo del nº de línea a MaudeInterpreter
             # print(self.prepare_response(self.shell(self.prepare_request(cell))))
             # print(self.shell(self.prepare_request(cell)))
-            print(self.shell(cell))
+            print(self.shell(cell,echo=True))
 # In order to actually use these magics, you must register them with a
 # running IPython.
 
