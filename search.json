@@ -1,0 +1,82 @@
+[
+  {
+    "objectID": "maude-magic.html",
+    "href": "maude-magic.html",
+    "title": "maude-magic",
+    "section": "",
+    "text": "Refs: - pexpect - nbdev - IPython magics - Export examples - See persistent Shells.ipynb - Myst Markdown\n%%bash for package in pexpect nbdev jupyterlab-quarto do\npip list | grep “^\\(package *\" &gt; /dev/null && echo \"\\)package found” || pip install $package done # This must be done in terminal # nbdev_install_quarto",
+    "crumbs": [
+      "maude-magic"
+    ]
+  },
+  {
+    "objectID": "maude-magic.html#the-maude-shell-class",
+    "href": "maude-magic.html#the-maude-shell-class",
+    "title": "maude-magic",
+    "section": "The Maude Shell class",
+    "text": "The Maude Shell class\n\n\nMaudeShell\n\ndef MaudeShell(\n    timeout:int=3\n):\n\nControls maude execution, executing commands and print responses. Preserve sessions between different cell executions.\n\n\n\nTimeoutException\n\ndef TimeoutException(\n    \n):\n\nException raised if time-out.\n\n\nCreating maude shell:\n\n\nStdin-load an incomplete module:\n\n\nLoad a module:\n\n\nShow module:\n\n\nMake a reduction:\n\n\nWarning:",
+    "crumbs": [
+      "maude-magic"
+    ]
+  },
+  {
+    "objectID": "maude-magic.html#the-maude-system-class",
+    "href": "maude-magic.html#the-maude-system-class",
+    "title": "maude-magic",
+    "section": "The Maude System class:",
+    "text": "The Maude System class:\n\n\nMaudeSystem\n\ndef MaudeSystem(\n    timeout:int=3\n):\n\nEncapsulates maude commands as object methods.\n\n\nIntantiation:\nFirs, instantiate a MaudeSystem instance:\n\nmaude = MaudeSystem()\n\n\n\nLoad:\n\nmaude.load('SIMPLE-NAT')\n\n\n\nGet a result in a tuple:\n\nmaude._getTupleResult('red','s s zero',MaudeSystem.red_reo)\n\n{'sort': 'Nat', 'value': 's s zero'}\n\n\n\n\nTest red command:\n\nmaude.red('s s zero')\n\n{'sort': 'Nat', 'value': 's s zero'}\n\n\n\n\nTest for type and value:\n\nmaude.red('s s zero','Nat')\ntry:\n    maude.red('s s zero','NzNat','s s zero')\nexcept:\n    pass  \nelse:\n    raise Exception()\n\n\n\nTest parse command:\n\nmaude.parse('s s zero')\n\n{'sort': 'Nat', 'value': 's s zero'}\n\n\n\n\nTest LOAD\n\n\nTest READ\n%%maude fmod SIMPLE-NAT is sort Nat . op zero : -&gt; Nat . op s_ : Nat -&gt; Nat . op + : Nat Nat -&gt; Nat . vars M N : Nat . eq zero + N = N . eq s N + M = s (N + M) . endfm\n\n\nTest SHOW\n\nprint(maude.show_module())\n\nshow module  .\nfmod SIMPLE-NAT is\n  sort Nat .\n  op zero : -&gt; Nat .\n  op s_ : Nat -&gt; Nat .\n  op _+_ : Nat Nat -&gt; Nat .\n  vars M N : Nat .\n  eq zero + N = N .\n  eq s N + M = s (N + M) .\nendfm\n\n\n\n\n\nTest REDUCE\n\nmaude.red('s s zero','Nat','s s zero')\n\n{'sort': 'Nat', 'value': 's s zero'}\n\n\n\nmaude.red('s s zero','Nat','s s zero',echo=True)\n\nred s s zero .\nreduce in SIMPLE-NAT : s s zero .\nrewrites: 0 in 0ms cpu (0ms real) (~ rewrites/second)\nresult Nat: s s zero\n\n\n\n{'sort': 'Nat', 'value': 's s zero'}\n\n\nDestroying object closes session:",
+    "crumbs": [
+      "maude-magic"
+    ]
+  },
+  {
+    "objectID": "maude-magic.html#the-maude-magic-class",
+    "href": "maude-magic.html#the-maude-magic-class",
+    "title": "maude-magic",
+    "section": "The maude Magic Class",
+    "text": "The maude Magic Class\n\n\nload_ipython_extension\n\ndef load_ipython_extension(\n    ipython\n):\n\nAny module file that define a function named load_ipython_extension can be loaded via %load_ext module.path or be configured to be autoloaded by IPython at startup time.\n\n\n\nMaudeMagics\n\ndef MaudeMagics(\n    shell:NoneType=None\n):\n\nAdapts Maude Shell to a IPython Magic class.Uses a owned Maude Shell. Cell magics are used to execute maude commands. Line magics are used for command line options.\n\n\nUsage\nNow, MaudeMagic uses an owned MaudeInterpreter to run maude commands:\n\n\nTest maude Magic\n\nfmod PEANO-NAT is\n    sort Nat .\n    op zero : -&gt; Nat .\n    op s_ : Nat -&gt; Nat .\n    op _+_ : Nat Nat -&gt; Nat .\n        \n    eq zero +  N:Nat = N:Nat .\n    eq s N:Nat + N':Nat = N:Nat + s N':Nat .     \nendfm\n\nfmod PEANO-NAT is\n&gt;     sort Nat .\n&gt;     op zero : -&gt; Nat .\n&gt;     op s_ : Nat -&gt; Nat .\n&gt;     op _+_ : Nat Nat -&gt; Nat .\n&gt; \n&gt;     eq zero +  N:Nat = N:Nat .\n&gt;     eq s N:Nat + N':Nat = N:Nat + s N':Nat .     \n&gt; endfm\n\n\n\n\nmaude.red('s zero + s s zero','Nat')\n\n{'sort': 'Nat', 'value': 's s s zero'}\n\n\n\nmaude.trace=True\nmaude.red('s zero + s s zero','Nat')\n\nRequest:\n 'red s zero + s s zero .\\n'\nResponse:\n 'red s zero + s s zero .\\n\\rreduce in PEANO-NAT : s zero + s s zero .\\r\\nrewrites: 2 in 0ms cpu (0ms real) (~ rewrites/second)\\r\\nresult Nat: s s s zero\\r\\n\\rMaude&gt; '\n    Line: 'red s zero + s s zero .'\n    Line: 'reduce in PEANO-NAT : s zero + s s zero .'\n    Line: 'rewrites: 2 in 0ms cpu (0ms real) (~ rewrites/second)'\n    Line: 'result Nat: s s s zero'\n\n\n{'sort': 'Nat', 'value': 's s s zero'}\n\n\n\nmaude.trace=False\nmaude.parse('s zero + s s zero','Nat')\n\n{'sort': 'Nat', 'value': 's zero + s s zero'}\n\n\n\n\nCell input\n\nfmod RESOURCE is sort Resource . endfm\n\nfmod RESOURCE is sort Resource . endfm\n\n\n\n\nfmod IRI is \n    pr RESOURCE .\n    sort IRI . \n    *** Is a Biyection      \n    op denotes  : IRI -&gt; Resource . \n    op referent : IRI -&gt; Resource .\nendfm\n\nfmod IRI is \n&gt;     pr RESOURCE .\n&gt;     sort IRI . \n&gt;     *** Is a Biyection      \n&gt;     op denotes  : IRI -&gt; Resource . \n&gt;     op referent : IRI -&gt; Resource .\n&gt; endfm\n\n\n\n\nfmod LITERAL-SORT is \n    ex RESOURCE . \n    sort Literal .\n    op denotes : Literal -&gt; Resource .     \nendfm\n\nfmod LITERAL-SORT is \n&gt;     ex RESOURCE . \n&gt;     sort Literal .\n&gt;     op denotes : Literal -&gt; Resource .     \n&gt; endfm\n\n\n\n\nfmod BLANK-NODE is sort BlankNode . endfm\n\nfmod BLANK-NODE is sort BlankNode . endfm\n\n\n\n\nfmod SUBJECT is\n    protecting IRI . protecting BLANK-NODE . \n    sort Subject . \n    subsorts IRI BlankNode &lt; Subject .\nendfm\n\nfmod SUBJECT is\n&gt;     protecting IRI . protecting BLANK-NODE . \n&gt;     sort Subject . \n&gt;     subsorts IRI BlankNode &lt; Subject .\n&gt; endfm\n\n\n\n\nfmod PREDICATE is protecting IRI . endfm\n\n&gt; fmod PREDICATE is protecting IRI . endfm",
+    "crumbs": [
+      "maude-magic"
+    ]
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "maude-magic",
+    "section": "",
+    "text": "This file will become your README and also the index of your documentation.",
+    "crumbs": [
+      "maude-magic"
+    ]
+  },
+  {
+    "objectID": "index.html#developer-guide",
+    "href": "index.html#developer-guide",
+    "title": "maude-magic",
+    "section": "Developer Guide",
+    "text": "Developer Guide\nIf you are new to using nbdev here are some useful pointers to get you started.\n\nInstall maude_magic in Development mode\n# make sure maude_magic package is installed in development mode\n$ pip install -e .\n\n# make changes under nbs/ directory\n# ...\n\n# compile to have changes apply to maude_magic\n$ nbdev_prepare",
+    "crumbs": [
+      "maude-magic"
+    ]
+  },
+  {
+    "objectID": "index.html#usage",
+    "href": "index.html#usage",
+    "title": "maude-magic",
+    "section": "Usage",
+    "text": "Usage\n\nInstallation\nInstall latest from the GitHub repository:\n$ pip install git+https://github.com/jsm65fenoll/maude-magic.git\nor from conda\n$ conda install -c jsm65fenoll maude_magic\nor from pypi\n$ pip install maude_magic\n\n\nDocumentation\nDocumentation can be found hosted on this GitHub repository’s pages. Additionally you can find package manager specific guidelines on conda and pypi respectively.",
+    "crumbs": [
+      "maude-magic"
+    ]
+  },
+  {
+    "objectID": "index.html#how-to-use",
+    "href": "index.html#how-to-use",
+    "title": "maude-magic",
+    "section": "How to use",
+    "text": "How to use\nFill me in please! Don’t forget code examples:\n\n1+1\n\n2",
+    "crumbs": [
+      "maude-magic"
+    ]
+  }
+]
