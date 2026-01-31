@@ -170,7 +170,7 @@ class MaudeSystem(MaudeShell):
         return result
 
 
-# %% ../nbs/maude-magic.ipynb 46
+# %% ../nbs/maude-magic.ipynb 47
 # This code can be put in any Python module, it does not require IPython
 # itself to be running already.  It only creates the magics subclass but
 # doesn't instantiate it yet.
