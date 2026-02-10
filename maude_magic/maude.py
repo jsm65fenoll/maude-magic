@@ -125,6 +125,7 @@ class MaudeSystem(MaudeShell):
         """ Executes 'command' over 'term' and uses 'pattern' to fetch result components into a dict witth keys 
             type and value."""
         # echo in this command must be true to have a response to analyze
+        if echo: print(command +" " + term.strip()+ " .")
         response = self(command +" " + term.strip()+ " .",echo=True)
         # This echo is a parameter
         if echo: print(response)
@@ -150,7 +151,9 @@ class MaudeSystem(MaudeShell):
         return self._getTupleResult('red',term,self.red_reo,sort,value,echo=echo)
 
     def parse(self,term,sort=None,value=None)->dict:
-        """ Parses "term" in current module and returns a tupe,"value dictionary"."""
+        """ Parses "term" in current module and returns a tupe,"value dictionary".
+            Ingnores newlines. """
+        term = term.translate({10 : 32, 13 : 32}) 
         return self._getTupleResult('parse',term,self.parse_reo,sort,value)
    
     def __del__(self):
@@ -239,6 +242,9 @@ class MaudeMagics(Magics):
             #print("MaudeInterpreter:",'result=',result)
             return result
         else:
+            # remove line spaces 
+            # cell = cell.translate({10 : 32, 13 : 32}) 
+            # print(repr(cell))
             # print(f"cell at maude()={cell}")
             # ToDo: migrar el cálculo del nº de línea a MaudeInterpreter
             # print(self.prepare_response(self.shell(self.prepare_request(cell))))
