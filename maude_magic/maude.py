@@ -29,7 +29,7 @@ class MaudeShell:
     """Controls maude execution, executing commands and print responses.
        Preserve sessions between different cell executions."""
 
-    warnings_re = r"^(.*)Warning:(.*)\."
+    warnings_re = r"^Warning:.*$"
     #messages_re = r"(Advisory|Warning):(.*)\."
     # r"\r\x1b[32mAdvisory: \x1b[0mredefining module \x1b[35mSIMPLE-NAT\x1b[0m.\r\n\rMaude> '
     warnings_reo = re.compile(warnings_re,flags=re.MULTILINE)
@@ -71,7 +71,7 @@ class MaudeShell:
         if trace: print('Response:\n',repr(response+self.sh.after))
         warnings = self.warnings_reo.findall(response)
         if warnings and raises:
-                raise Exception("Warnings:\n"+warnings)
+                raise Exception("Warnings:\n"+"\n".join(warnings))
         if echo:
             return response
         else:
@@ -101,13 +101,13 @@ class MaudeShell:
         self.__call__('quit .')
         
 
-# %% ../nbs/maude-magic.ipynb 22
+# %% ../nbs/maude-magic.ipynb 23
 class MaudeSystem(MaudeShell):
     """Encapsulates maude commands as object methods."""
-
-    red_re = r"^result (?P<sort>(\w|')+): *(?P<value>.*)$"
+    identifier = r"(?:[^ :,.()\[\]<>]|[^-]>)+" 
+    red_re = r"^result (?P<sort>"+identifier+"): +(?P<value>.*)$"
     red_reo = re.compile(red_re,re.MULTILINE)
-    parse_re = r"^(?P<sort>(\w|')+): *(?P<value>.*)$"
+    parse_re = r"^(?P<sort>"+identifier+"): *(?P<value>.*)$"
     parse_reo = re.compile(parse_re,re.MULTILINE)
 
     
@@ -191,7 +191,7 @@ class MaudeSystem(MaudeShell):
         return result
 
 
-# %% ../nbs/maude-magic.ipynb 50
+# %% ../nbs/maude-magic.ipynb 52
 # This code can be put in any Python module, it does not require IPython
 # itself to be running already.  It only creates the magics subclass but
 # doesn't instantiate it yet.
