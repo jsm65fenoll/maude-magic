@@ -29,10 +29,10 @@ class MaudeShell:
     """Controls maude execution, executing commands and print responses.
        Preserve sessions between different cell executions."""
 
-    messages_re = r"^(.*)(Advisory|Warning):(.*)\."
+    warnings_re = r"^(.*)Warning:(.*)\."
     #messages_re = r"(Advisory|Warning):(.*)\."
     # r"\r\x1b[32mAdvisory: \x1b[0mredefining module \x1b[35mSIMPLE-NAT\x1b[0m.\r\n\rMaude> '
-    messages_reo = re.compile(messages_re,flags=re.MULTILINE)
+    warnings_reo = re.compile(warnings_re,flags=re.MULTILINE)
         
     trace = False 
     
@@ -55,21 +55,27 @@ class MaudeShell:
             self.sh.send('\003')
             # and expect for normal response
             self.sh.expect('Maude> ',timeout)
-        #self.sh.expect(pexpect.EOF)    
-        return self.sh.before    
+        #self.sh.expect(pexpect.EOF)
+        # Normalizamos los fines de linea que devielve Maude. Vamos a eliminar los \r
+        return self.sh.before.replace("\r","")    
         
-    def __call__(self,command,timeout=TIMEOUT,raises=True,echo=False):
+    def __call__(self,command,timeout=TIMEOUT,raises=True,echo=False,trace=False):
         """ Executes 'command" in the shell and checks for messages """
         # Don't terminate session by command
         if command == 'quit .': return ''
         #""" Adds '\n' to command if it don't ends with it. """
         if command[-1] != '\n' : command += '\n'
-        if self.trace: print('Request:\n',repr(command))
+        if trace: print('Request:\n',repr(command))
         self.sh.send(command)
         response = self._sync()
-        if self.trace: print('Response:\n',repr(response+self.sh.after))
-        return self.__checkForMessages(response,raises,echo)
-        
+        if trace: print('Response:\n',repr(response+self.sh.after))
+        warnings = self.warnings_reo.findall(response)
+        if warnings and raises:
+                raise Exception("Warnings:\n"+warnings)
+        if echo:
+            return response
+        else:
+            return None        
 
     def __checkForMessages(self,response,raises=True,echo=False):
         """ Scans response for Advisory or Warning message lines.
@@ -99,9 +105,9 @@ class MaudeShell:
 class MaudeSystem(MaudeShell):
     """Encapsulates maude commands as object methods."""
 
-    red_re = r"^result (?P<sort>(\w|')+): *(?P<value>.*)\r"
+    red_re = r"^result (?P<sort>(\w|')+): *(?P<value>.*)$"
     red_reo = re.compile(red_re,re.MULTILINE)
-    parse_re = r"^(?P<sort>(\w|')+): *(?P<value>.*)\r"
+    parse_re = r"^(?P<sort>(\w|')+): *(?P<value>.*)$"
     parse_reo = re.compile(parse_re,re.MULTILINE)
 
     
@@ -117,18 +123,14 @@ class MaudeSystem(MaudeShell):
         self(command +" " + term.strip() + " .")
         return None
     
-    def _getTextResult(self,command,term)->str:
+    def _getTextResult(self,command,term,trace=False)->str:
         """ Executes 'command' over 'term' expecting a result of text type."""    
-        return self(command +" " + term.strip() + " .",echo=True)
+        return self(command +" " + term.strip() + " .",echo=True,trace=trace)
 
-    def _getTupleResult(self,command,term,pattern,sort=None,value=None,echo=False)->dict:
+    def _getTupleResult(self,command,term,pattern,sort=None,value=None,echo=False,trace=False)->dict:
         """ Executes 'command' over 'term' and uses 'pattern' to fetch result components into a dict witth keys 
             type and value."""
-        # echo in this command must be true to have a response to analyze
-        if echo: print(command +" " + term.strip()+ " .")
-        response = self(command +" " + term.strip()+ " .",echo=True)
-        # This echo is a parameter
-        if echo: print(response)
+        response = self(command +" " + term.strip()+ " .",echo=True,trace=trace)
         result = pattern.search(response) if isinstance(pattern,re.Pattern) else  re.search(pattern,response)
         if sort  : assert result['sort']  == sort ,f"Type error: expecting {sort}, but found {result[0]}."
         if value : assert result['value'] == value,f"Value error: expecting {value},but found {result[1]}."    
@@ -146,15 +148,31 @@ class MaudeSystem(MaudeShell):
         """ Shows module "module" as cell result. By default, shows current module.""" 
         return self._getTextResult('show module',module)
  
-    def red(self,term,sort=None,value=None,echo=False)->dict:
-        """ Reduces "term" in current module and returs a "type,value" dictionary.""" 
-        return self._getTupleResult('red',term,self.red_reo,sort,value,echo=echo)
+    def show_ops(self,module="",filter=None,trace=False):
+        pre_result = self._getTextResult('show ops',module,trace=trace)
+        # Elimino saltos de linea que no terminan el comando
+        pre_result = re.sub('([^.])\\n','\\1 ',pre_result)
+        if filter:
+            return "\n".join(re.findall(filter,pre_result,flags=re.MULTILINE))
+        else:        
+            return pre_result
 
-    def parse(self,term,sort=None,value=None)->dict:
+    def show_sorts(self,module="",filter=None,trace=False):
+        pre_result = self._getTextResult('show sorts',module,trace=trace)
+        if filter:
+            return "\n".join(re.findall(filter,pre_result,flags=re.MULTILINE))
+        else:        
+            return pre_result
+    
+    def red(self,term,sort=None,value=None,echo=False,trace=False)->dict:
+        """ Reduces "term" in current module and returs a "type,value" dictionary.""" 
+        return self._getTupleResult('red',term,self.red_reo,sort,value,echo=echo,trace=trace)
+
+    def parse(self,term,sort=None,value=None,trace=False)->dict:
         """ Parses "term" in current module and returns a tupe,"value dictionary".
             Ingnores newlines. """
         term = term.translate({10 : 32, 13 : 32}) 
-        return self._getTupleResult('parse',term,self.parse_reo,sort,value)
+        return self._getTupleResult('parse',term,self.parse_reo,sort,value,trace=trace)
    
     def __del__(self):
         super().__del__()
@@ -173,7 +191,7 @@ class MaudeSystem(MaudeShell):
         return result
 
 
-# %% ../nbs/maude-magic.ipynb 47
+# %% ../nbs/maude-magic.ipynb 50
 # This code can be put in any Python module, it does not require IPython
 # itself to be running already.  It only creates the magics subclass but
 # doesn't instantiate it yet.
