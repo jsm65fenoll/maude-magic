@@ -77,26 +77,6 @@ class MaudeShell:
         else:
             return None        
 
-    def __checkForMessages(self,response,raises=True,echo=False):
-        """ Scans response for Advisory or Warning message lines.
-            If echo = True, drops no message lines.
-            if raise = True, raises an assert exception on a Warning line 
-        """
-        # print(repr(response)) 
-        result=''
-        for line in response.strip().split("\n"): 
-            line=line.replace("\r","")
-            if self.trace: print("\tLine:",repr(line))
-            match = self.messages_reo.match(line)
-            if not match:
-                if echo: result += (line+"\r\n")
-            else:
-                #message_line = f"{message[0]}{message[1]} :{message[2]}"
-                if raises: assert match[2]=="Advisory",line
-                #if raises: assert match[1]=="Advisory",line
-                result += (line+"\r\n")               
-        return result if result else None
-
     def __del__(self):
         self.__call__('quit .')
         
@@ -104,7 +84,7 @@ class MaudeShell:
 # %% ../nbs/maude-magic.ipynb 23
 class MaudeSystem(MaudeShell):
     """Encapsulates maude commands as object methods."""
-    identifier = r"(?:[^ :,.()\[\]<>]|[^-]>)+" 
+    identifier = r"(?:[^ :,.()\[\]<>]|[^-]>|`\)|`\()+" 
     red_re = r"^result (?P<sort>"+identifier+"): +(?P<value>.*)$"
     red_reo = re.compile(red_re,re.MULTILINE)
     parse_re = r"^(?P<sort>"+identifier+"): *(?P<value>.*)$"
