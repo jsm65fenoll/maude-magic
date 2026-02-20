@@ -235,18 +235,13 @@ class MaudeMagics(Magics):
     @line_cell_magic
     def maude(self, line, cell=None):
         if cell is None:
-            #print("MaudeInterpreter:","shell line=",line)
             result = self.shell(line)
-            #print("MaudeInterpreter:",'result=',result)
             return result
         else:
-            # remove line spaces 
-            # cell = cell.translate({10 : 32, 13 : 32}) 
-            # print(repr(cell))
-            # print(f"cell at maude()={cell}")
-            # ToDo: migrar el cálculo del nº de línea a MaudeInterpreter
-            # print(self.prepare_response(self.shell(self.prepare_request(cell))))
-            # print(self.shell(self.prepare_request(cell)))
+            command = line.split()
+            if len(command) >=2 and command[0] == "writeTo":    
+                with open(command[1],"w") as f:
+                    f.write(cell)
             print(self.shell(cell,echo=True))
 # In order to actually use these magics, you must register them with a
 # running IPython.
@@ -255,7 +250,7 @@ def load_ipython_extension(ipython):
     """
     Any module file that define a function named `load_ipython_extension`
     can be loaded via `%load_ext module.path` or be configured to be
-    autoloaded by IPython at startup time.
+    autoloaded by IPython at startup time.º
     """
     # You can register the class itself without instantiating it.  IPython will
     # call the default constructor on it.
